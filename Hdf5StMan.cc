@@ -1,11 +1,5 @@
-//    (c) University of Western Australia
-//    International Centre of Radio Astronomy Research
-//    M468, 35 Stirling Hwy
-//    Crawley, Perth WA 6009
-//    Australia
-//
-//    Shanghai Astronomical Observatory, Chinese Academy of Sciences
-//    80 Nandan Road, Shanghai 200030, China
+//    (c) Oak Ridge National Laboratory
+//    1 Bethel Valley Road, Oak Ridge, TN 37830, United States
 //
 //    This library is free software: you can redistribute it and/or
 //    modify it under the terms of the GNU General Public License as published
@@ -21,14 +15,11 @@
 //    with this library. If not, see <http://www.gnu.org/licenses/>.
 //
 //    Any bugs, questions, concerns and/or suggestions please email to
-//    lbq@shao.ac.cn, jason.wang@icrar.org
+//    wangr1@ornl.gov or jason.ruonan.wang@gmail.com
 
 #include "Hdf5StManColumn.h"
 
-
 namespace casacore {
-
-
 
     DataManager* Hdf5StMan::makeObject (const casa::String& aDataManType, const casa::Record& spec){
         return new Hdf5StMan();
@@ -48,10 +39,13 @@ namespace casacore {
         cout << "Hdf5StMan Error: addRow not supported!" << endl;
     }
 
-
     void Hdf5StMan::create (uInt aNrRows){
         itsNrRows = aNrRows;
-        itsNrCols = ncolumn();
+        itsHdf5File = H5Fcreate(fileName().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        for(int i=0; i<ncolumn(); ++i){
+            itsColumnPtrBlk[i]->setHdf5File(itsHdf5File);
+            itsColumnPtrBlk[i]->create(aNrRows);
+        }
     }
 
     void Hdf5StMan::open (uInt aNrRows, AipsIO& ios){
@@ -67,27 +61,23 @@ namespace casacore {
     }
 
     DataManagerColumn* Hdf5StMan::makeScalarColumn (const String& name, int aDataType, const String& dataTypeId){
-        return makeColumnMeta(name, aDataType, dataTypeId, 's');
+        return makeColumnCommon(name, aDataType, dataTypeId);
     }
 
     DataManagerColumn* Hdf5StMan::makeDirArrColumn (const String& name, int aDataType, const String& dataTypeId){
-        return makeColumnMeta(name, aDataType, dataTypeId, 'd');
+        return makeColumnCommon(name, aDataType, dataTypeId);
     }
 
     DataManagerColumn* Hdf5StMan::makeIndArrColumn (const String& name, int aDataType, const String& dataTypeId){
-#ifdef ADIOSSTMAN_FORCE_DIRECT_ARRAY
-        return makeColumnMeta(name, aDataType, dataTypeId, 'd');
-#else
-        return makeColumnMeta(name, aDataType, dataTypeId, 'i');
-#endif
+        return makeColumnCommon(name, aDataType, dataTypeId);
     }
 
-    DataManagerColumn* Hdf5StMan::makeColumnMeta (const String& name, int aDataType, const String& dataTypeId, char columnType){
+    DataManagerColumn* Hdf5StMan::makeColumnCommon (const String& name, int aDataType, const String& dataTypeId){
         if (ncolumn() >= itsColumnPtrBlk.nelements()) {
             itsColumnPtrBlk.resize (itsColumnPtrBlk.nelements() + 32);
         }
         Hdf5StManColumn* aColumn = new Hdf5StManColumn (this, aDataType, ncolumn());
-        aColumn->setColumnName(name);
+        aColumn->setName(name);
         itsColumnPtrBlk[ncolumn()] = aColumn;
         return aColumn;
     }
@@ -107,11 +97,11 @@ namespace casacore {
         return true;
     }
 
-
     String Hdf5StMan::dataManagerName() const
     {
         return itsDataManName;
     }
+
     void register_adiosstman(){
         DataManager::registerCtor ("Hdf5StMan", Hdf5StMan::makeObject);
     }

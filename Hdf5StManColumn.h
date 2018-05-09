@@ -1,11 +1,5 @@
-//    (c) University of Western Australia
-//    International Centre of Radio Astronomy Research
-//    M468, 35 Stirling Hwy
-//    Crawley, Perth WA 6009
-//    Australia
-//
-//    Shanghai Astronomical Observatory, Chinese Academy of Sciences
-//    80 Nandan Road, Shanghai 200030, China
+//    (c) Oak Ridge National Laboratory
+//    1 Bethel Valley Road, Oak Ridge, TN 37830, United States
 //
 //    This library is free software: you can redistribute it and/or
 //    modify it under the terms of the GNU General Public License as published
@@ -21,7 +15,7 @@
 //    with this library. If not, see <http://www.gnu.org/licenses/>.
 //
 //    Any bugs, questions, concerns and/or suggestions please email to
-//    lbq@shao.ac.cn, jason.wang@icrar.org
+//    wangr1@ornl.gov or jason.ruonan.wang@gmail.com
 
 #ifndef ADIOSSTMANCOLUMN_H
 #define ADIOSSTMANCOLUMN_H
@@ -40,12 +34,15 @@ namespace casacore {
             Hdf5StManColumn (Hdf5StMan* aParent, int aDataType, uInt aColNr);
             ~Hdf5StManColumn ();
 
-            IPosition getShapeColumn();
+            virtual void setShapeColumn(const IPosition& aShape);
+            virtual IPosition shape(uInt aRowNr);
 
             int getDataTypeSize();
             int getDataType();
-            void setColumnName(String aName);
+            void setName(String columnName);
+            void setHdf5File(hid_t hdf5File);
             String getColumnName();
+            void create (uInt aNrRows);
 
             // *** access a row for an array column ***
             virtual void putArrayV (uInt rownr, const void* dataPtr);
@@ -69,18 +66,23 @@ namespace casacore {
         protected:
 
             void getArrayWrapper(uint64_t rowStart, uint64_t nrRows, const Slicer& ns, void* dataPtr);
-            virtual void getArrayMetaV (uint64_t rowStart, uint64_t nrRows, const Slicer& ns, void* data);
-            virtual void putArrayMetaV (uint64_t row, const void* data);
+            virtual void getArrayCommonV (uint64_t rowStart, uint64_t nrRows, const Slicer& ns, void* data);
+            virtual void putArrayCommonV (uint64_t row, const void* data);
 
             // StMan pointer
             Hdf5StMan *itsStManPtr;
+            hid_t itsHdf5File;
 
             // Column property
             String itsColumnName;
             char itsColumnType;  // 's' for scalar, 'd' for direct array, 'i' for indirect array
-            IPosition itsShape;
+            IPosition itsCasaShape;
+            std::vector<hsize_t> itsHdf5Shape;
             int itsDataTypeSize;
             int itsCasaDataType;
+            hid_t itsHdf5DataType;
+            hid_t itsHdf5DataSpace;
+            hid_t itsHdf5DataSet;
 
     };
 
