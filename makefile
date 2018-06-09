@@ -1,16 +1,18 @@
 ifeq ($(VENDOR),cray)
 	CC=cc -dynamic
 else
-	CC=g++
+	CC=mpic++
 endif
 
 TARGET=libhdf5stman.so
 SRC=Hdf5StMan.cc Hdf5StManColumn.cc
 DIRS=tests
 
+FLAGS=-DHAVE_MPI
+
 
 $(TARGET):$(SRC)
-	$(CC) $(SRC) -fPIC --shared -o $(TARGET) -lcasa_tables -lcasa_casa -lhdf5_cpp -lhdf5 -std=c++11
+	$(CC) $(SRC) -fPIC --shared -o $(TARGET) -lcasa_tables -lcasa_casa -lhdf5 -std=c++11 $(FLAGS)
 
 ifdef CASA_LIB
 	cp $(TARGET) $(CASA_LIB)

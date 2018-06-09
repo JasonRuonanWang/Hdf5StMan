@@ -24,6 +24,7 @@
 #include <casacore/tables/Tables/Table.h>
 #include <casacore/casa/IO/AipsIO.h>
 
+#include <mpi.h>
 #include "hdf5.h"
 
 namespace casacore {
@@ -33,7 +34,11 @@ namespace casacore {
     class Hdf5StMan : public DataManager
     {
         public:
-            Hdf5StMan() = default;
+            Hdf5StMan();
+#ifdef HAVE_MPI
+            Hdf5StMan(MPI_Comm mpiComm);
+            MPI_Comm itsMpiComm = MPI_COMM_WORLD;
+#endif
             ~Hdf5StMan() = default;
             virtual DataManager* clone() const;
             virtual String dataManagerType() const;

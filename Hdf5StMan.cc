@@ -21,6 +21,18 @@
 
 namespace casacore {
 
+    Hdf5StMan::Hdf5StMan()
+        :DataManager()
+    {
+    }
+#ifdef HAVE_MPI
+    Hdf5StMan::Hdf5StMan(MPI_Comm mpiComm)
+        :DataManager(),
+        itsMpiComm(mpiComm)
+    {
+    }
+#endif
+
     DataManager* Hdf5StMan::makeObject (const casa::String& aDataManType, const casa::Record& spec){
         return new Hdf5StMan();
     }
@@ -40,8 +52,26 @@ namespace casacore {
     }
 
     void Hdf5StMan::create (uInt aNrRows){
+
         itsNrRows = aNrRows;
-        itsHdf5File = H5Fcreate(fileName().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        std::string itsFileName = fileName();
+
+#ifdef HAVE_MPI
+        // broadcast filename from Rank 0 to other ranks
+        int itsFileNameLen = itsFileName.length();
+        MPI_Bcast(&itsFileNameLen, 1, MPI_INT, 0, itsMpiComm);
+        std::vector<char> itsFileNameVec(itsFileNameLen + 1);
+        std::memcpy(itsFileNameVec.data(), itsFileName.data(), itsFileNameLen);
+        MPI_Bcast(itsFileNameVec.data(), itsFileNameLen, MPI_CHAR, 0, itsMpiComm);
+        itsFileNameVec[itsFileNameLen] = '\0';
+        itsFileName = itsFileNameVec.data();
+        // define parallel IO for HDF5
+        hid_t access_template = H5Pcreate (H5P_FILE_ACCESS);
+        H5Pset_fapl_mpio(access_template, itsMpiComm, MPI_INFO_NULL);
+#else
+        hid_t access_template = H5P_DEFAULT;
+#endif
+        itsHdf5File = H5Fcreate(itsFileName.data(), H5F_ACC_TRUNC, H5P_DEFAULT, access_template);
         for(int i=0; i<ncolumn(); ++i){
             itsColumnPtrBlk[i]->setHdf5File(itsHdf5File);
             itsColumnPtrBlk[i]->create(aNrRows);
@@ -53,7 +83,6 @@ namespace casacore {
         ios >> itsDataManName;
         ios >> itsStManColumnType;
         ios.getend();
-
         itsNrRows = aNrRows;
     }
 
