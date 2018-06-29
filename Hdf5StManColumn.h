@@ -31,7 +31,7 @@ namespace casacore {
     {
         public:
 
-            Hdf5StManColumn (Hdf5StMan* aParent, int aDataType, uInt aColNr);
+            Hdf5StManColumn (Hdf5StMan* aParent, int aDataType, uInt aColNr, String columnName);
             ~Hdf5StManColumn ();
 
             virtual void setShapeColumn(const IPosition& aShape);
@@ -39,10 +39,8 @@ namespace casacore {
 
             int getDataTypeSize();
             int getDataType();
-            void setName(String columnName);
-            void setHdf5File(hid_t hdf5File);
             String getColumnName();
-            void create (uInt aNrRows);
+            void create (uInt aNrRows, hid_t hdf5File);
 
             // *** access a row for an array column ***
             virtual void putArrayV (uInt rownr, const void* dataPtr);

@@ -22,10 +22,11 @@
 
 namespace casacore {
 
-    Hdf5StManColumn::Hdf5StManColumn (Hdf5StMan* aParent, int aDataType, uInt aColNr)
+    Hdf5StManColumn::Hdf5StManColumn (Hdf5StMan* aParent, int aDataType, uInt aColNr, String columnName)
         :StManColumn (aDataType),
         itsStManPtr (aParent),
-        itsCasaDataType(aDataType)
+        itsCasaDataType(aDataType),
+        itsColumnName(columnName)
     {
 
         switch (aDataType){
@@ -94,13 +95,6 @@ namespace casacore {
     Hdf5StManColumn::~Hdf5StManColumn (){
     }
 
-    void Hdf5StManColumn::setName (String aName){
-        itsColumnName = aName;
-    }
-    void Hdf5StManColumn::setHdf5File(hid_t hdf5File){
-        itsHdf5File = hdf5File;
-    }
-
     String Hdf5StManColumn::getColumnName (){
         return itsColumnName;
     }
@@ -125,12 +119,16 @@ namespace casacore {
         return itsCasaShape;
     }
 
-    void Hdf5StManColumn::create (uInt aNrRows){
+    void Hdf5StManColumn::create (uInt aNrRows, hid_t hdf5File){
+        itsHdf5File = hdf5File;
         const size_t dim = itsHdf5Shape.size();
         itsHdf5Shape[0] = aNrRows;
         itsHdf5DataSpace = H5Screate_simple(dim, itsHdf5Shape.data(), NULL);
         itsHdf5DataSet = H5Dcreate2(itsHdf5File, ("/" + itsColumnName).c_str(), itsHdf5DataType, itsHdf5DataSpace, H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-
+        for(auto i : itsHdf5Shape){
+            std::cout << i << "  ";
+        }
+        std::cout << std::endl;
     }
 
     void Hdf5StManColumn::putArrayCommonV (uint64_t row, const void* data){
@@ -157,7 +155,6 @@ namespace casacore {
 
     void Hdf5StManColumn::getArrayCommonV (uint64_t rowStart, uint64_t nrRows, const Slicer& ns, void* data){
     }
-
 
     // *** access a row for an array column ***
     void Hdf5StManColumn::putArrayV (uInt rownr, const void* dataPtr){

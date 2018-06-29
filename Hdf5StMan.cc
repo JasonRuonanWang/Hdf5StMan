@@ -73,8 +73,7 @@ namespace casacore {
 #endif
         itsHdf5File = H5Fcreate(itsFileName.data(), H5F_ACC_TRUNC, H5P_DEFAULT, access_template);
         for(int i=0; i<ncolumn(); ++i){
-            itsColumnPtrBlk[i]->setHdf5File(itsHdf5File);
-            itsColumnPtrBlk[i]->create(aNrRows);
+            itsColumnPtrBlk[i]->create(aNrRows, itsHdf5File);
         }
     }
 
@@ -105,8 +104,7 @@ namespace casacore {
         if (ncolumn() >= itsColumnPtrBlk.nelements()) {
             itsColumnPtrBlk.resize (itsColumnPtrBlk.nelements() + 32);
         }
-        Hdf5StManColumn* aColumn = new Hdf5StManColumn (this, aDataType, ncolumn());
-        aColumn->setName(name);
+        Hdf5StManColumn* aColumn = new Hdf5StManColumn (this, aDataType, ncolumn(), name);
         itsColumnPtrBlk[ncolumn()] = aColumn;
         return aColumn;
     }
