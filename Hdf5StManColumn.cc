@@ -125,10 +125,6 @@ namespace casacore {
         itsHdf5Shape[0] = aNrRows;
         itsHdf5DataSpace = H5Screate_simple(dim, itsHdf5Shape.data(), NULL);
         itsHdf5DataSet = H5Dcreate2(itsHdf5File, ("/" + itsColumnName).c_str(), itsHdf5DataType, itsHdf5DataSpace, H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-        for(auto i : itsHdf5Shape){
-            std::cout << i << "  ";
-        }
-        std::cout << std::endl;
     }
 
     void Hdf5StManColumn::putArrayCommonV (uint64_t row, const void* data){
