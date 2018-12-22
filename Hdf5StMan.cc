@@ -52,12 +52,11 @@ namespace casacore {
     }
 
     void Hdf5StMan::create (uInt aNrRows){
-
         itsNrRows = aNrRows;
         std::string itsFileName = fileName();
-
 #ifdef HAVE_MPI
         // broadcast filename from Rank 0 to other ranks
+        /*
         int itsFileNameLen = itsFileName.length();
         MPI_Bcast(&itsFileNameLen, 1, MPI_INT, 0, itsMpiComm);
         std::vector<char> itsFileNameVec(itsFileNameLen + 1);
@@ -65,6 +64,7 @@ namespace casacore {
         MPI_Bcast(itsFileNameVec.data(), itsFileNameLen, MPI_CHAR, 0, itsMpiComm);
         itsFileNameVec[itsFileNameLen] = '\0';
         itsFileName = itsFileNameVec.data();
+        */
         // define parallel IO for HDF5
         hid_t access_template = H5Pcreate (H5P_FILE_ACCESS);
         H5Pset_fapl_mpio(access_template, itsMpiComm, MPI_INFO_NULL);
