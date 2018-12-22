@@ -53,7 +53,7 @@ namespace casacore {
             virtual DataManagerColumn* makeIndArrColumn (const String& aName, int aDataType, const String& aDataTypeID);
             virtual void deleteManager();
             virtual void addRow (uInt aNrRows);
-            static DataManager* makeObject (const casa::String& aDataManType, const casa::Record& spec);
+            static DataManager* makeObject (const String& aDataManType, const Record& spec);
             uInt getNrRows();
 
         private:

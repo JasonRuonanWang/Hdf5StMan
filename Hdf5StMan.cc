@@ -33,7 +33,7 @@ namespace casacore {
     }
 #endif
 
-    DataManager* Hdf5StMan::makeObject (const casa::String& aDataManType, const casa::Record& spec){
+    DataManager* Hdf5StMan::makeObject (const String& aDataManType, const Record& spec){
         return new Hdf5StMan();
     }
 
